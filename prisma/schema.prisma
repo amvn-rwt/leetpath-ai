@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -10,4 +5,189 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum ExperienceLevel {
+  JUNIOR
+  MID
+  SENIOR
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum SkillLevel {
+  WEAK
+  MEDIUM
+  STRONG
+}
+
+enum InterviewStatus {
+  SETUP
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum SubmissionStatus {
+  PENDING
+  RUNNING
+  ACCEPTED
+  WRONG_ANSWER
+  TIME_LIMIT
+  RUNTIME_ERROR
+  COMPILE_ERROR
+}
+
+model User {
+  id                 String             @id @default(uuid()) @db.Uuid
+  email              String             @unique
+  fullName           String?            @map("full_name")
+  avatarUrl          String?            @map("avatar_url")
+  experienceLevel    ExperienceLevel?   @map("experience_level")
+  targetCompanies    String[]           @default([]) @map("target_companies")
+  preferredLanguages String[]           @default([]) @map("preferred_languages")
+  onboardingComplete Boolean            @default(false) @map("onboarding_complete")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  skillAssessments  SkillAssessment[]
+  submissions       Submission[]
+  interviewSessions InterviewSession[]
+  statistics        UserStatistics?
+
+  @@map("users")
+}
+
+model SkillAssessment {
+  id        String     @id @default(uuid()) @db.Uuid
+  userId    String     @map("user_id") @db.Uuid
+  topic     String
+  selfLevel SkillLevel @map("self_level")
+  aiLevel   SkillLevel? @map("ai_level")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topic])
+  @@map("skill_assessments")
+}
+
+model Question {
+  id                  String     @id @default(uuid()) @db.Uuid
+  title               String
+  description         String     @db.Text
+  examples            Json
+  constraints         String[]
+  difficulty          Difficulty
+  topics              String[]
+  tags                String[]
+  hints               String[]
+  expectedTimeComplexity  String? @map("expected_time_complexity")
+  expectedSpaceComplexity String? @map("expected_space_complexity")
+  testCases           Json       @map("test_cases")
+  hiddenTestCases     Json       @map("hidden_test_cases")
+  starterCode         Json?      @map("starter_code")
+  createdAt           DateTime   @default(now()) @map("created_at")
+
+  submissions Submission[]
+
+  @@map("questions")
+}
+
+model Submission {
+  id         String           @id @default(uuid()) @db.Uuid
+  userId     String           @map("user_id") @db.Uuid
+  questionId String           @map("question_id") @db.Uuid
+  language   String
+  code       String           @db.Text
+  status     SubmissionStatus @default(PENDING)
+  stdout     String?          @db.Text
+  stderr     String?          @db.Text
+  runtime    Float?
+  memory     Float?
+  passedTests Int?            @map("passed_tests")
+  totalTests  Int?            @map("total_tests")
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  score    Score?
+
+  @@map("submissions")
+}
+
+model Score {
+  id                    String @id @default(uuid()) @db.Uuid
+  submissionId          String @unique @map("submission_id") @db.Uuid
+  correctness           Int
+  timeComplexity        String @map("time_complexity")
+  optimalTimeComplexity String @map("optimal_time_complexity")
+  spaceComplexity       String @map("space_complexity")
+  optimalSpaceComplexity String @map("optimal_space_complexity")
+  codeQuality           Int    @map("code_quality")
+  edgeCaseHandling      Int    @map("edge_case_handling")
+  overallScore          Int    @map("overall_score")
+  feedback              String @db.Text
+  optimalSolution       String? @db.Text @map("optimal_solution")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@map("scores")
+}
+
+model InterviewSession {
+  id          String          @id @default(uuid()) @db.Uuid
+  userId      String          @map("user_id") @db.Uuid
+  difficulty  Difficulty
+  topics      String[]
+  companyStyle String?        @map("company_style")
+  duration    Int
+  status      InterviewStatus @default(SETUP)
+  finalScore  Int?            @map("final_score")
+  report      Json?
+  startedAt   DateTime?       @map("started_at")
+  completedAt DateTime?       @map("completed_at")
+  createdAt   DateTime        @default(now()) @map("created_at")
+
+  user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages InterviewMessage[]
+
+  @@map("interview_sessions")
+}
+
+model InterviewMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  sessionId String   @map("session_id") @db.Uuid
+  role      String
+  content   String   @db.Text
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  session InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("interview_messages")
+}
+
+model UserStatistics {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @unique @map("user_id") @db.Uuid
+  problemsSolved  Int      @default(0) @map("problems_solved")
+  averageScore    Float    @default(0) @map("average_score")
+  currentStreak   Int      @default(0) @map("current_streak")
+  longestStreak   Int      @default(0) @map("longest_streak")
+  weakTopics      String[] @default([]) @map("weak_topics")
+  strongTopics    String[] @default([]) @map("strong_topics")
+  totalTime       Int      @default(0) @map("total_time")
+  interviewsCompleted Int  @default(0) @map("interviews_completed")
+  lastActiveAt    DateTime? @map("last_active_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_statistics")
 }
