@@ -15,6 +15,23 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  async function handleGoogleSignIn() {
+    setError(null);
+    setLoading(true);
+    const supabase = createClient();
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+      },
+    });
+    if (oauthError) {
+      setError(oauthError.message);
+      setLoading(false);
+      return;
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -67,8 +84,14 @@ export default function SignUpPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
-            <Button variant="outline" className="w-full" type="button" disabled>
-              Continue with Google (coming soon)
+            <Button
+              variant="outline"
+              className="w-full"
+              type="button"
+              disabled={loading}
+              onClick={handleGoogleSignIn}
+            >
+              Continue with Google
             </Button>
             <Button variant="outline" className="w-full" type="button" disabled>
               Continue with GitHub (coming soon)

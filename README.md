@@ -1,5 +1,9 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Auth (Google Sign-In)
+
+To enable "Continue with Google", follow the step-by-step guide: **[docs/GOOGLE_AUTH_SETUP.md](docs/GOOGLE_AUTH_SETUP.md)**. It covers Google Cloud Console (OAuth client, consent screen) and Supabase (enable Google provider, redirect URLs).
+
 ## Getting Started
 
 First, run the development server:
