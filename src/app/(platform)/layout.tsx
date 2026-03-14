@@ -32,7 +32,7 @@ export default async function PlatformLayout({
         {/* Logo */}
         <div className="flex h-12 items-center border-b px-5">
           <Link href="/dashboard" className="text-sm font-mono font-semibold tracking-tight">
-            Leet-Path
+            LeetPath
           </Link>
         </div>
 

@@ -17,7 +17,7 @@ export default async function MarketingLayout({
       <header className="border-b">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link href="/" className="text-xl font-bold">
-            LeetPath AI
+            LeetPath
           </Link>
           <nav className="flex items-center gap-4">
             <Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground">
