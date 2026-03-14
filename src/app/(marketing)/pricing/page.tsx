@@ -29,7 +29,7 @@ export default function PricingPage() {
             </ul>
           </CardContent>
           <CardFooter>
-            <Link href="/sign-up" className="w-full">
+            <Link href="/sign-in" className="w-full">
               <Button variant="outline" className="w-full">Get Started</Button>
             </Link>
           </CardFooter>

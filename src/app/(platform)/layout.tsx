@@ -2,9 +2,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { LayoutDashboard, Code, MessageSquare, BarChart3, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { LayoutDashboard, Code, MessageSquare, BarChart3 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -48,12 +48,7 @@ export default async function PlatformLayout({
         </nav>
         <Separator />
         <div className="p-4">
-          <form action="/api/auth/signout" method="post">
-            <Button variant="ghost" size="sm" className="w-full justify-start gap-3">
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </Button>
-          </form>
+          <SignOutButton className="w-full justify-start gap-3" />
         </div>
       </aside>
 
