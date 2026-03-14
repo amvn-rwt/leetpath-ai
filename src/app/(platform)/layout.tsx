@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { LayoutDashboard, Code, MessageSquare, BarChart3, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,7 @@ export default async function PlatformLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
+  const supabase = createClient(await cookies());
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {

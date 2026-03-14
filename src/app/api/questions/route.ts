@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { generateQuestion } from "@/lib/ai/question-generator";
 import { db } from "@/lib/db";
@@ -6,7 +7,7 @@ import type { Difficulty } from "@/types";
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient(await cookies());
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { scoreCode } from "@/lib/ai/code-scorer";
 import { db } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient(await cookies());
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {

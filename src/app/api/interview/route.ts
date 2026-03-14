@@ -1,10 +1,11 @@
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { streamInterviewResponse } from "@/lib/ai/interviewer";
 import { db } from "@/lib/db";
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient(await cookies());
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
