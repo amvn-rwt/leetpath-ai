@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export default async function MarketingLayout({
   children,
@@ -22,6 +23,7 @@ export default async function MarketingLayout({
             <Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground">
               Pricing
             </Link>
+            <ModeToggle />
             {user ? (
               <>
                 <Link href="/dashboard">

@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { LayoutDashboard, Code, MessageSquare, BarChart3 } from "lucide-react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { ModeToggle } from "@/components/mode-toggle";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -30,8 +31,8 @@ export default async function PlatformLayout({
       <aside className="flex w-60 shrink-0 flex-col border-r bg-sidebar">
         {/* Logo */}
         <div className="flex h-12 items-center border-b px-5">
-          <Link href="/dashboard" className="text-sm font-semibold tracking-tight">
-            LeetPath AI
+          <Link href="/dashboard" className="text-sm font-mono font-semibold tracking-tight">
+            Leet-Path
           </Link>
         </div>
 
@@ -66,6 +67,7 @@ export default async function PlatformLayout({
             Welcome back
           </span>
           <div className="flex items-center gap-3">
+            <ModeToggle />
             <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
               {user.email?.[0].toUpperCase()}
             </div>
