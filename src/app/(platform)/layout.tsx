@@ -29,7 +29,7 @@ export default async function PlatformLayout({
       {/* Left Sidebar */}
       <aside className="flex w-60 shrink-0 flex-col border-r bg-sidebar">
         {/* Logo */}
-        <div className="flex h-14 items-center border-b px-5">
+        <div className="flex h-12 items-center border-b px-5">
           <Link href="/dashboard" className="text-sm font-semibold tracking-tight">
             LeetPath AI
           </Link>
@@ -61,7 +61,7 @@ export default async function PlatformLayout({
       {/* Main area */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top Navbar */}
-        <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-6">
+        <header className="flex h-12 shrink-0 items-center justify-between border-b bg-background px-6">
           <span className="text-sm font-medium text-muted-foreground">
             Welcome back
           </span>
