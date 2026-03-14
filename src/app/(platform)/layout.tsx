@@ -3,7 +3,6 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { LayoutDashboard, Code, MessageSquare, BarChart3 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 
 const navItems = [
@@ -26,35 +25,58 @@ export default async function PlatformLayout({
   }
 
   return (
-    <div className="flex h-screen">
-      <aside className="flex w-64 flex-col border-r bg-card">
-        <div className="flex h-16 items-center px-6">
-          <Link href="/dashboard" className="text-lg font-bold">
+    <div className="flex h-screen overflow-hidden bg-background">
+      {/* Left Sidebar */}
+      <aside className="flex w-60 shrink-0 flex-col border-r bg-sidebar">
+        {/* Logo */}
+        <div className="flex h-14 items-center border-b px-5">
+          <Link href="/dashboard" className="text-sm font-semibold tracking-tight">
             LeetPath AI
           </Link>
         </div>
-        <Separator />
-        <nav className="flex-1 space-y-1 p-4">
+
+        {/* Nav */}
+        <nav className="flex-1 space-y-0.5 p-3">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+              className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon className="h-4 w-4 shrink-0" />
               {item.label}
             </Link>
           ))}
         </nav>
-        <Separator />
-        <div className="p-4">
-          <SignOutButton className="w-full justify-start gap-3" />
+
+        {/* Bottom user section */}
+        <div className="border-t p-3">
+          <div className="mb-2 truncate px-3 py-1 text-xs text-muted-foreground">
+            {user.email}
+          </div>
+          <SignOutButton className="w-full justify-start gap-3 text-muted-foreground" />
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8">{children}</div>
-      </main>
+      {/* Main area */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Top Navbar */}
+        <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-6">
+          <span className="text-sm font-medium text-muted-foreground">
+            Welcome back
+          </span>
+          <div className="flex items-center gap-3">
+            <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+              {user.email?.[0].toUpperCase()}
+            </div>
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-6">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }
