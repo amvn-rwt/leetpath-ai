@@ -1,13 +1,61 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { createClient } from "@/lib/supabase/client";
 
 export default function SignInPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") ?? "/dashboard";
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const email = (formData.get("email") as string)?.trim();
+    const password = formData.get("password") as string;
+
+    if (!email || !password) {
+      setError("Please enter your email and password.");
+      setLoading(false);
+      return;
+    }
+
+    const supabase = createClient();
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError) {
+      setError(signInError.message);
+      setLoading(false);
+      return;
+    }
+
+    const syncRes = await fetch("/api/auth/sync-user", { method: "POST" });
+    if (!syncRes.ok) {
+      setError("Signed in but could not sync account. Please try again.");
+      setLoading(false);
+      return;
+    }
+
+    router.push(redirectTo);
+    router.refresh();
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
       <Card className="w-full max-w-md">
@@ -17,11 +65,11 @@ export default function SignInPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
-            <Button variant="outline" className="w-full">
-              Continue with Google
+            <Button variant="outline" className="w-full" type="button" disabled>
+              Continue with Google (coming soon)
             </Button>
-            <Button variant="outline" className="w-full">
-              Continue with GitHub
+            <Button variant="outline" className="w-full" type="button" disabled>
+              Continue with GitHub (coming soon)
             </Button>
           </div>
 
@@ -32,17 +80,37 @@ export default function SignInPage() {
             </span>
           </div>
 
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            {error && (
+              <p className="text-sm text-destructive" role="alert">
+                {error}
+              </p>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="you@example.com" />
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                autoComplete="email"
+                required
+                disabled={loading}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" />
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                disabled={loading}
+              />
             </div>
-            <Button type="submit" className="w-full">
-              Sign In
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing in…" : "Sign In"}
             </Button>
           </form>
 
