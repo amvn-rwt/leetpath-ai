@@ -21,10 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${jetbrainsMono.variable} font-mono antialiased`}
-      >
+    <html lang="en" suppressHydrationWarning className={jetbrainsMono.variable}>
+      <body className="font-mono antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
