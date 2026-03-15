@@ -1,15 +1,21 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "@/components/editor/code-editor";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type {
   SupportedLanguage,
   TestCase,
   ExecutionResult,
 } from "@/types";
-import { Loader2Icon, CheckCircleIcon, XCircleIcon } from "lucide-react";
+import { Loader2Icon, CheckCircleIcon, XCircleIcon, PlayIcon } from "lucide-react";
 
 export interface PracticeQuestionData {
   id: string;
@@ -42,7 +48,74 @@ const LANGUAGES: SupportedLanguage[] = [
 const getStarter = (q: PracticeQuestionData, lang: SupportedLanguage) =>
   (q.starterCode as Record<string, string> | null)?.[lang] ?? "";
 
+function QuestionContent({ question }: { question: PracticeQuestionData }) {
+  return (
+    <div className="p-6 text-card-foreground">
+      <h2 className="text-xl font-bold">{question.title}</h2>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium">
+          {question.difficulty}
+        </span>
+        {question.topics.map((t) => (
+          <span
+            key={t}
+            className="rounded-md border border-border px-2 py-0.5 text-xs"
+          >
+            {t}
+          </span>
+        ))}
+      </div>
+      <div className="prose prose-sm dark:prose-invert mt-4 max-w-none">
+        <p className="whitespace-pre-wrap text-sm">{question.description}</p>
+      </div>
+      {question.examples.length > 0 && (
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold">Examples</h3>
+          {question.examples.map((ex, i) => (
+            <div key={i} className="mt-2 rounded-md border bg-muted/30 p-3 text-sm">
+              <p><strong>Input:</strong> {ex.input}</p>
+              <p><strong>Output:</strong> {ex.output}</p>
+              {ex.explanation && (
+                <p className="text-muted-foreground">{ex.explanation}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {question.constraints.length > 0 && (
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold">Constraints</h3>
+          <ul className="list-disc pl-5 text-sm">
+            {question.constraints.map((c, i) => (
+              <li key={i}>{c}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {question.expectedTimeComplexity && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Expected time: {question.expectedTimeComplexity}, space:{" "}
+          {question.expectedSpaceComplexity ?? "—"}
+        </p>
+      )}
+      {question.hints.length > 0 && (
+        <details className="mt-4">
+          <summary className="cursor-pointer text-sm font-medium">
+            Hints
+          </summary>
+          <ul className="list-disc pl-5 text-sm text-muted-foreground">
+            {question.hints.map((h, i) => (
+              <li key={i}>{h}</li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </div>
+  );
+}
+
 export function PracticeWorkspace({ question }: PracticeWorkspaceProps) {
+  const isMobile = useIsMobile();
   const [language, setLanguage] = useState<SupportedLanguage>("python");
   const [codeByLang, setCodeByLang] = useState<Partial<Record<SupportedLanguage, string>>>(() => {
     const starter = question.starterCode as Record<string, string> | null;
@@ -114,119 +187,72 @@ export function PracticeWorkspace({ question }: PracticeWorkspaceProps) {
     }
   };
 
-  return (
-    <div className="flex h-[calc(100vh-8rem)] gap-4">
-      <div className="flex-1 overflow-y-auto rounded-lg border bg-card p-6 text-card-foreground">
-        <h2 className="text-xl font-bold">{question.title}</h2>
-        <div className="mt-2 flex flex-wrap gap-2">
-          <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium">
-            {question.difficulty}
-          </span>
-          {question.topics.map((t) => (
-            <span
-              key={t}
-              className="rounded-md border border-border px-2 py-0.5 text-xs"
-            >
-              {t}
-            </span>
-          ))}
+  if (isMobile) {
+    return (
+      <div className="flex h-full w-full flex-col gap-0">
+        <div className="min-h-[35vh] flex-1 overflow-y-auto border-b bg-card">
+          <QuestionContent question={question} />
         </div>
-        <div className="prose prose-sm dark:prose-invert mt-4 max-w-none">
-          <p className="whitespace-pre-wrap text-sm">{question.description}</p>
-        </div>
-        {question.examples.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-sm font-semibold">Examples</h3>
-            {question.examples.map((ex, i) => (
-              <div key={i} className="mt-2 rounded-md border bg-muted/30 p-3 text-sm">
-                <p><strong>Input:</strong> {ex.input}</p>
-                <p><strong>Output:</strong> {ex.output}</p>
-                {ex.explanation && (
-                  <p className="text-muted-foreground">{ex.explanation}</p>
+        <div className="min-h-[35vh] flex flex-1 flex-col overflow-hidden border-b">
+          <Tabs
+            value={language}
+            onValueChange={(v) => switchLanguage(v as SupportedLanguage)}
+          >
+            <div className="flex shrink-0 items-center justify-between border-b px-2">
+              <TabsList>
+                {LANGUAGES.map((lang) => (
+                  <TabsTrigger key={lang} value={lang}>
+                    {lang}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              <Button
+                size="sm"
+                onClick={runTests}
+                disabled={running || question.testCases.length === 0}
+              >
+                {running ? (
+                  <>
+                    <Loader2Icon className="mr-2 size-4 animate-spin" />
+                    Running…
+                  </>
+                ) : (
+                  "Run tests"
                 )}
-              </div>
-            ))}
-          </div>
-        )}
-        {question.constraints.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-sm font-semibold">Constraints</h3>
-            <ul className="list-disc pl-5 text-sm">
-              {question.constraints.map((c, i) => (
-                <li key={i}>{c}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {question.expectedTimeComplexity && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            Expected time: {question.expectedTimeComplexity}, space:{" "}
-            {question.expectedSpaceComplexity ?? "—"}
-          </p>
-        )}
-        {question.hints.length > 0 && (
-          <details className="mt-4">
-            <summary className="cursor-pointer text-sm font-medium">
-              Hints
-            </summary>
-            <ul className="list-disc pl-5 text-sm text-muted-foreground">
-              {question.hints.map((h, i) => (
-                <li key={i}>{h}</li>
-              ))}
-            </ul>
-          </details>
-        )}
-      </div>
-
-      <div className="flex flex-1 flex-col rounded-lg border">
-        <Tabs
-          value={language}
-          onValueChange={(v) => switchLanguage(v as SupportedLanguage)}
-        >
-          <div className="flex items-center justify-between border-b px-2">
-            <TabsList>
-              {LANGUAGES.map((lang) => (
-                <TabsTrigger key={lang} value={lang}>
-                  {lang}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            <Button
-              size="sm"
-              onClick={runTests}
-              disabled={running || question.testCases.length === 0}
-            >
-              {running ? (
-                <>
-                  <Loader2Icon className="mr-2 size-4 animate-spin" />
-                  Running…
-                </>
-              ) : (
-                "Run tests"
-              )}
-            </Button>
-          </div>
-          <div className="h-[calc(100vh-8rem-120px)] min-h-[200px]">
-            <CodeEditor
-              language={language}
-              value={code}
-              onChange={setCode}
-            />
-          </div>
-        </Tabs>
-        {results.length > 0 && (
-          <div className="border-t bg-muted/30 p-3">
-            <h3 className="text-sm font-semibold">Test results</h3>
-            <div className="mt-2 space-y-1">
+              </Button>
+            </div>
+            <div className="min-h-0 flex-1">
+              <CodeEditor
+                language={language}
+                value={code}
+                onChange={setCode}
+              />
+            </div>
+          </Tabs>
+        </div>
+        <div className="flex min-h-[20vh] max-h-[30vh] flex-col overflow-y-auto bg-muted/30 p-3">
+          <h3 className="text-sm font-semibold">Execution results</h3>
+          {results.length === 0 ? (
+            <div className="flex flex-1 flex-col items-center justify-center gap-2 py-6 text-center text-sm text-muted-foreground">
+              <PlayIcon className="size-6 opacity-50" />
+              <p>Run your code to see test results here.</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={runTests}
+                disabled={running || question.testCases.length === 0}
+              >
+                {running ? "Running…" : "Run tests"}
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-2 flex flex-col gap-1">
               {results.map((r, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-2 text-sm"
-                >
+                <div key={i} className="flex items-center gap-2 text-sm">
                   {r?.status === "ACCEPTED" ? (
-                    <CheckCircleIcon className="size-4 text-green-600 dark:text-green-400" />
+                    <CheckCircleIcon className="size-4 shrink-0 text-green-600 dark:text-green-400" />
                   ) : (
-                    <XCircleIcon className="size-4 text-destructive" />
+                    <XCircleIcon className="size-4 shrink-0 text-destructive" />
                   )}
                   <span>
                     Test {i + 1}:{" "}
@@ -238,9 +264,118 @@ export function PracticeWorkspace({ question }: PracticeWorkspaceProps) {
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <ResizablePanelGroup
+      orientation="horizontal"
+      className="h-full w-full"
+    >
+      {/* Left: question description */}
+      <ResizablePanel
+        defaultSize={35}
+        minSize={25}
+        className="overflow-y-auto"
+      >
+        <div className="h-full bg-card">
+          <QuestionContent question={question} />
+        </div>
+      </ResizablePanel>
+
+      <ResizableHandle withHandle />
+
+      {/* Right: editor (top) + execution results (bottom) */}
+      <ResizablePanel defaultSize={65} minSize={40} className="flex flex-col">
+        <ResizablePanelGroup orientation="vertical" className="flex-1">
+          <ResizablePanel defaultSize={70} minSize={30}>
+            <div className="flex h-full flex-col border-l">
+              <Tabs
+                value={language}
+                onValueChange={(v) => switchLanguage(v as SupportedLanguage)}
+              >
+                <div className="flex items-center justify-between border-b px-2">
+                  <TabsList>
+                    {LANGUAGES.map((lang) => (
+                      <TabsTrigger key={lang} value={lang}>
+                        {lang}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  <Button
+                    size="sm"
+                    onClick={runTests}
+                    disabled={running || question.testCases.length === 0}
+                  >
+                    {running ? (
+                      <>
+                        <Loader2Icon className="mr-2 size-4 animate-spin" />
+                        Running…
+                      </>
+                    ) : (
+                      "Run tests"
+                    )}
+                  </Button>
+                </div>
+                <div className="min-h-0 flex-1">
+                  <CodeEditor
+                    language={language}
+                    value={code}
+                    onChange={setCode}
+                  />
+                </div>
+              </Tabs>
+            </div>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          <ResizablePanel defaultSize={30} minSize={15} className="overflow-y-auto">
+            <div className="flex h-full flex-col border-t bg-muted/30 p-3">
+              <h3 className="text-sm font-semibold">Execution results</h3>
+              {results.length === 0 ? (
+                <div className="flex flex-1 flex-col items-center justify-center gap-2 py-8 text-center text-sm text-muted-foreground">
+                  <PlayIcon className="size-8 opacity-50" />
+                  <p>Run your code to see test results here.</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={runTests}
+                    disabled={running || question.testCases.length === 0}
+                  >
+                    {running ? "Running…" : "Run tests"}
+                  </Button>
+                </div>
+              ) : (
+                <div className="mt-2 flex flex-col gap-1">
+                  {results.map((r, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-2 text-sm"
+                    >
+                      {r?.status === "ACCEPTED" ? (
+                        <CheckCircleIcon className="size-4 shrink-0 text-green-600 dark:text-green-400" />
+                      ) : (
+                        <XCircleIcon className="size-4 shrink-0 text-destructive" />
+                      )}
+                      <span>
+                        Test {i + 1}:{" "}
+                        {r?.status === "ACCEPTED"
+                          ? "Passed"
+                          : r?.status ?? "Error"}
+                        {r?.runtime != null && ` (${r.runtime}s)`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 }
