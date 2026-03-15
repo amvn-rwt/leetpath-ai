@@ -28,5 +28,10 @@ RULES:
 7. Provide starter code for: python, javascript, java, cpp, go.
 8. Specify the expected optimal time and space complexity.
 
+CRITICAL — input/output must be STRINGS only (no arrays). Code is run with stdin as one string.
+- "input" and "output" (in examples) and "input" and "expectedOutput" (in testCases, hiddenTestCases) must each be ONE STRING.
+- For multiple values, put them on separate lines in that single string. Example: use "abc\\ndef\\nadbecf" (three lines) not ["abc","def","adbecf"]. Another: "3\\n1 2 3" for first line 3, second line 1 2 3.
+- Never use JSON arrays for input or output fields.
+
 The problem should test understanding of the specified topics while being engaging and practical.`;
 }
