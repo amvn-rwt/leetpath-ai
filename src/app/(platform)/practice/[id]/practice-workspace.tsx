@@ -71,43 +71,47 @@ export function PracticeWorkspace({ question }: PracticeWorkspaceProps) {
   const runTests = async () => {
     setRunning(true);
     setResults([]);
-    const testResults: (ExecutionResult | null)[] = [];
-    for (const tc of question.testCases) {
-      try {
-        const res = await fetch("/api/execute", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            code,
-            language,
+    try {
+      const res = await fetch("/api/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code,
+          language,
+          testCases: question.testCases.map((tc) => ({
             stdin: tc.input,
             expectedOutput: tc.expectedOutput,
-          }),
-        });
-        if (!res.ok) {
-          testResults.push({
+          })),
+        }),
+      });
+      if (!res.ok) {
+        const err = (await res.json()).error ?? "Request failed";
+        setResults(
+          question.testCases.map(() => ({
             stdout: null,
-            stderr: (await res.json()).error ?? "Request failed",
-            status: "RUNTIME_ERROR",
+            stderr: err,
+            status: "RUNTIME_ERROR" as const,
             runtime: null,
             memory: null,
-          });
-        } else {
-          const data = await res.json();
-          testResults.push(data);
-        }
-      } catch {
-        testResults.push({
+          }))
+        );
+      } else {
+        const data = await res.json();
+        setResults(data.results ?? []);
+      }
+    } catch {
+      setResults(
+        question.testCases.map(() => ({
           stdout: null,
           stderr: "Network error",
-          status: "RUNTIME_ERROR",
+          status: "RUNTIME_ERROR" as const,
           runtime: null,
           memory: null,
-        });
-      }
+        }))
+      );
+    } finally {
+      setRunning(false);
     }
-    setResults(testResults);
-    setRunning(false);
   };
 
   return (

@@ -4,6 +4,16 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 To enable "Continue with Google", follow the step-by-step guide: **[docs/GOOGLE_AUTH_SETUP.md](docs/GOOGLE_AUTH_SETUP.md)**. It covers Google Cloud Console (OAuth client, consent screen) and Supabase (enable Google provider, redirect URLs).
 
+## Code execution (Run tests)
+
+Practice “Run tests” uses [Judge0](https://judge0.com/) via RapidAPI. Set your RapidAPI key in `.env.local`:
+
+```env
+JUDGE0_API_KEY=your_rapidapi_key
+```
+
+Get the key from [RapidAPI Judge0 CE](https://rapidapi.com/judge0-official/api/judge0-ce). For self-hosted Judge0 CE, set `JUDGE0_API_URL` and `JUDGE0_USE_RAPIDAPI=false` (see Judge0 docs).
+
 ## Getting Started
 
 First, run the development server:
