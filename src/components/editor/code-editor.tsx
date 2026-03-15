@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Editor, { type OnMount } from "@monaco-editor/react";
 import type { SupportedLanguage } from "@/types";
 
@@ -22,14 +22,23 @@ interface CodeEditorProps {
 export function CodeEditor({ language, value, onChange, readOnly }: CodeEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
+  const [height, setHeight] = useState(400);
+  const [width, setWidth] = useState(640);
 
   const handleMount: OnMount = useCallback((editor) => {
     editor.focus();
     const container = containerRef.current;
     if (!container) return;
-    const ro = new ResizeObserver(() => {
-      editor.layout();
-    });
+    const updateSize = () => {
+      const { clientHeight, clientWidth } = container;
+      if (clientHeight > 0 && clientWidth > 0) {
+        setHeight(clientHeight);
+        setWidth(clientWidth);
+        editor.layout();
+      }
+    };
+    updateSize();
+    const ro = new ResizeObserver(updateSize);
     ro.observe(container);
     cleanupRef.current = () => ro.disconnect();
   }, []);
@@ -42,9 +51,14 @@ export function CodeEditor({ language, value, onChange, readOnly }: CodeEditorPr
   }, []);
 
   return (
-    <div ref={containerRef} className="h-full w-full">
+    <div
+      ref={containerRef}
+      className="h-full w-full min-h-0 min-w-0"
+      style={{ overflow: "hidden" }}
+    >
       <Editor
-        height="100%"
+        height={height}
+        width={width}
         language={LANGUAGE_MAP[language]}
         value={value}
         onChange={(val) => onChange(val ?? "")}

@@ -291,11 +291,12 @@ export function PracticeWorkspace({ question }: PracticeWorkspaceProps) {
       {/* Right: editor (top) + execution results (bottom) */}
       <ResizablePanel defaultSize={65} minSize={40} className="flex flex-col">
         <ResizablePanelGroup orientation="vertical" className="flex-1">
-          <ResizablePanel defaultSize={70} minSize={30}>
-            <div className="flex h-full flex-col border-l">
+          <ResizablePanel defaultSize={70} minSize={30} className="min-h-0">
+            <div className="flex h-full min-h-0 flex-col border-l">
               <Tabs
                 value={language}
                 onValueChange={(v) => switchLanguage(v as SupportedLanguage)}
+                className="min-h-0 flex-1 flex flex-col"
               >
                 <div className="flex items-center justify-between border-b px-2">
                   <TabsList>
@@ -320,7 +321,7 @@ export function PracticeWorkspace({ question }: PracticeWorkspaceProps) {
                     )}
                   </Button>
                 </div>
-                <div className="min-h-0 flex-1">
+                <div className="min-h-0 min-w-0 flex-1">
                   <CodeEditor
                     language={language}
                     value={code}
