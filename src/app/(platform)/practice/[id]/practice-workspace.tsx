@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CodeEditor } from "@/components/editor/code-editor";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getDifficultyBadgeClass } from "@/lib/difficulty";
 import type {
   SupportedLanguage,
   TestCase,
@@ -54,7 +55,7 @@ function QuestionContent({ question }: { question: PracticeQuestionData }) {
     <div className="p-6 text-card-foreground">
       <h2 className="text-xl font-bold">{question.title}</h2>
       <div className="mt-2 flex flex-wrap gap-2">
-        <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium">
+        <span className={getDifficultyBadgeClass(question.difficulty)}>
           {question.difficulty}
         </span>
         {question.topics.map((t) => (

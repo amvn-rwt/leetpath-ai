@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { getDifficultyBadgeClass } from "@/lib/difficulty";
 import { DSA_TOPICS, type Difficulty, type DSATopic } from "@/types";
 import { Loader2Icon } from "lucide-react";
 
@@ -229,7 +230,10 @@ export default function PracticePage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="line-clamp-1 text-base">{q.title}</CardTitle>
                   <div className="flex flex-wrap gap-1 pt-1">
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge
+                      variant="secondary"
+                      className={getDifficultyBadgeClass(q.difficulty, { inline: true })}
+                    >
                       {DIFFICULTY_LABELS[q.difficulty as Difficulty] ?? q.difficulty}
                     </Badge>
                     {q.topics.slice(0, 3).map((t) => (
