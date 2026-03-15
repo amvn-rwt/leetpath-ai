@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/resizable";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { CodeEditor } from "@/components/editor/code-editor";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type {
@@ -193,14 +194,12 @@ export function PracticeWorkspace({ question }: PracticeWorkspaceProps) {
       className="h-full w-full"
     >
       {/* Left: question description */}
-      <ResizablePanel
-        defaultSize={35}
-        minSize={25}
-        className="overflow-y-auto"
-      >
-        <div className="h-full bg-card">
-          <QuestionContent question={question} />
-        </div>
+      <ResizablePanel defaultSize={35} minSize={25}>
+        <ScrollArea className="h-full">
+          <div className="bg-card">
+            <QuestionContent question={question} />
+          </div>
+        </ScrollArea>
       </ResizablePanel>
 
       <ResizableHandle withHandle />
