@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { LayoutDashboard, Code, MessageSquare, BarChart3 } from "lucide-react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/mode-toggle";
 
 const navItems = [
@@ -68,9 +69,15 @@ export default async function PlatformLayout({
           </span>
           <div className="flex items-center gap-3">
             <ModeToggle />
-            <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-              {user.email?.[0].toUpperCase()}
-            </div>
+            <Avatar className="size-7">
+              <AvatarImage
+                src={user.user_metadata?.avatar_url ? "/api/avatar" : undefined}
+                alt=""
+              />
+              <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
+                {user.email?.[0].toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
           </div>
         </header>
 
