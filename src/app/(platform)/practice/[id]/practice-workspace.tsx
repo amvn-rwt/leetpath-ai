@@ -187,89 +187,6 @@ export function PracticeWorkspace({ question }: PracticeWorkspaceProps) {
     }
   };
 
-  if (isMobile) {
-    return (
-      <div className="flex h-full w-full flex-col gap-0">
-        <div className="min-h-[35vh] flex-1 overflow-y-auto border-b bg-card">
-          <QuestionContent question={question} />
-        </div>
-        <div className="min-h-[35vh] flex flex-1 flex-col overflow-hidden border-b">
-          <Tabs
-            value={language}
-            onValueChange={(v) => switchLanguage(v as SupportedLanguage)}
-          >
-            <div className="flex shrink-0 items-center justify-between border-b px-2">
-              <TabsList>
-                {LANGUAGES.map((lang) => (
-                  <TabsTrigger key={lang} value={lang}>
-                    {lang}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              <Button
-                size="sm"
-                onClick={runTests}
-                disabled={running || question.testCases.length === 0}
-              >
-                {running ? (
-                  <>
-                    <Loader2Icon className="mr-2 size-4 animate-spin" />
-                    Running…
-                  </>
-                ) : (
-                  "Run tests"
-                )}
-              </Button>
-            </div>
-            <div className="min-h-0 flex-1">
-              <CodeEditor
-                language={language}
-                value={code}
-                onChange={setCode}
-              />
-            </div>
-          </Tabs>
-        </div>
-        <div className="flex min-h-[20vh] max-h-[30vh] flex-col overflow-y-auto bg-muted/30 p-3">
-          <h3 className="text-sm font-semibold">Execution results</h3>
-          {results.length === 0 ? (
-            <div className="flex flex-1 flex-col items-center justify-center gap-2 py-6 text-center text-sm text-muted-foreground">
-              <PlayIcon className="size-6 opacity-50" />
-              <p>Run your code to see test results here.</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={runTests}
-                disabled={running || question.testCases.length === 0}
-              >
-                {running ? "Running…" : "Run tests"}
-              </Button>
-            </div>
-          ) : (
-            <div className="mt-2 flex flex-col gap-1">
-              {results.map((r, i) => (
-                <div key={i} className="flex items-center gap-2 text-sm">
-                  {r?.status === "ACCEPTED" ? (
-                    <CheckCircleIcon className="size-4 shrink-0 text-green-600 dark:text-green-400" />
-                  ) : (
-                    <XCircleIcon className="size-4 shrink-0 text-destructive" />
-                  )}
-                  <span>
-                    Test {i + 1}:{" "}
-                    {r?.status === "ACCEPTED"
-                      ? "Passed"
-                      : r?.status ?? "Error"}
-                    {r?.runtime != null && ` (${r.runtime}s)`}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <ResizablePanelGroup
       orientation="horizontal"
@@ -296,9 +213,9 @@ export function PracticeWorkspace({ question }: PracticeWorkspaceProps) {
               <Tabs
                 value={language}
                 onValueChange={(v) => switchLanguage(v as SupportedLanguage)}
-                className="min-h-0 flex-1 flex flex-col"
+                className="min-h-0 flex-1 flex gap-0 flex-col"
               >
-                <div className="flex items-center justify-between border-b px-2">
+                <div className="flex items-center justify-between border-b p-2">
                   <TabsList>
                     {LANGUAGES.map((lang) => (
                       <TabsTrigger key={lang} value={lang}>
