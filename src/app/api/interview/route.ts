@@ -19,7 +19,10 @@ export async function POST(request: Request) {
 
     const session = await db.interviewSession.findUnique({
       where: { id: sessionId },
-      include: { messages: { orderBy: { createdAt: "asc" } } },
+      include: {
+        messages: { orderBy: { createdAt: "asc" } },
+        question: true,
+      },
     });
 
     if (!session || session.userId !== user.id) {
@@ -41,13 +44,16 @@ export async function POST(request: Request) {
       (m) => m.role === "assistant" && m.metadata && (m.metadata as Record<string, unknown>).isHint
     ).length;
 
+    const questionTitle = session.question?.title ?? "Interview Question";
+    const questionDescription = session.question?.description ?? "Dynamic question from session";
+
     const result = streamInterviewResponse(messages, {
       difficulty: session.difficulty,
       topics: session.topics,
       companyStyle: session.companyStyle ?? undefined,
       duration: session.duration,
-      questionTitle: "Interview Question",
-      questionDescription: "Dynamic question from session",
+      questionTitle,
+      questionDescription,
       hintsUsed,
       maxHints: 3,
     });

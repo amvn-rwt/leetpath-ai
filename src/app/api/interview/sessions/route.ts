@@ -5,37 +5,6 @@ import { generateQuestion } from "@/lib/ai/question-generator";
 import { db } from "@/lib/db";
 import type { Difficulty } from "@/types";
 
-export async function GET() {
-  try {
-    const supabase = createClient(await cookies());
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const questions = await db.question.findMany({
-      where: { userId: user.id },
-      select: {
-        id: true,
-        title: true,
-        difficulty: true,
-        topics: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    return NextResponse.json(questions);
-  } catch (error) {
-    console.error("Questions list error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch questions" },
-      { status: 500 }
-    );
-  }
-}
-
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient(await cookies());
@@ -46,19 +15,29 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { topics, difficulty } = body as {
+    const { topics, difficulty, duration, companyStyle } = body as {
       topics: string[];
       difficulty: Difficulty;
+      duration: number;
+      companyStyle?: string;
     };
+
+    if (!topics?.length || !difficulty || !duration) {
+      return NextResponse.json(
+        { error: "topics, difficulty, and duration are required" },
+        { status: 400 }
+      );
+    }
 
     const dbUser = await db.user.findUnique({
       where: { id: user.id },
-      include: { skillAssessments: true, statistics: true },
+      include: { skillAssessments: true },
     });
 
-    const weakTopics = dbUser?.skillAssessments
-      .filter((s) => s.selfLevel === "WEAK" || s.aiLevel === "WEAK")
-      .map((s) => s.topic) ?? [];
+    const weakTopics =
+      dbUser?.skillAssessments
+        .filter((s) => s.selfLevel === "WEAK" || s.aiLevel === "WEAK")
+        .map((s) => s.topic) ?? [];
 
     const question = await generateQuestion({
       topics,
@@ -67,7 +46,7 @@ export async function POST(request: NextRequest) {
       weakTopics,
     });
 
-    const saved = await db.question.create({
+    const savedQuestion = await db.question.create({
       data: {
         userId: user.id,
         title: question.title,
@@ -86,11 +65,22 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(saved);
+    const session = await db.interviewSession.create({
+      data: {
+        userId: user.id,
+        questionId: savedQuestion.id,
+        difficulty,
+        topics,
+        duration,
+        companyStyle: companyStyle ?? null,
+      },
+    });
+
+    return NextResponse.json(session);
   } catch (error) {
-    console.error("Question generation error:", error);
+    console.error("Interview session creation error:", error);
     return NextResponse.json(
-      { error: "Failed to generate question" },
+      { error: "Failed to create interview session" },
       { status: 500 }
     );
   }
