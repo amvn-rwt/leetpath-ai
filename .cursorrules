@@ -1,0 +1,13 @@
+# Project rules
+
+## DRY (Don't Repeat Yourself)
+- Extract repeated logic into shared utilities, hooks, or components. Prefer `src/lib/` for pure functions and domain helpers.
+- Before adding a new function or block that resembles existing code, search the codebase for similar logic and reuse or generalize it (e.g. shared helpers, constants, or components).
+- If the same logic appears in two or more places, refactor into a single source of truth and import it where needed.
+- Keep UI copy, validation rules, and config (e.g. difficulty labels, API paths) in one place; reference them instead of duplicating.
+
+## Testing
+- Write tests for every new function or meaningful behavior. Use Vitest and React Testing Library (see `src/lib/*.test.ts` and `src/components/ui/*.test.tsx`).
+- Unit test pure functions (e.g. in `src/lib/`) with `*.test.ts` next to the module or in the same directory. Cover normal cases, edge cases, and invalid inputs.
+- For new React components or hooks that contain non-trivial logic, add `*.test.tsx` (or `*.spec.tsx`) with at least one test that renders and asserts on observable behavior.
+- Run `npm run test:run` before committing to ensure all tests pass. New code should not reduce existing test coverage.
